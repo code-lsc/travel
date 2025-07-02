@@ -6,8 +6,8 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
   mail:
     host: smtp.qq.com
-    username: 2804610365@qq.com
-    password: wuhncpcilkgvdfje # 授权码
+    username: aaaaa@qq.com
+    password: aaaaa # 授权码
   redis:
     host: 127.0.0.1
 #    password: root
