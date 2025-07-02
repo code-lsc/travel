@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.SuggestionDao">
+    <resultMap id="SuggestionResultMap" type="cn.ecut.travel.vo.SuggestionVo">
+        <id column="id" property="id" />
+        <result column="uid" property="uid" />
+        <result column="title" property="title" />
+        <result column="type" property="type" />
+        <result column="options" property="options" />
+        <result column="content" property="content" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <!-- 嵌套查询回复 -->
+        <association property="reply" javaType="cn.ecut.travel.entity.ReplyEntity">
+            <id column="reply_id" property="id" />
+            <result column="sid" property="sid" />
+            <result column="reply_content" property="content" />
+            <result column="reply_status" property="status" />
+            <result column="reply_create_time" property="createTime" />
+        </association>
+    </resultMap>
+
+    <insert id="insertSuggestion" parameterType="cn.ecut.travel.entity.SuggestionEntity">
+        INSERT INTO t_suggestion (uid,title, type, options, content, name, phone, status, create_time)
+        VALUES (#{uid},#{title}, #{type}, #{options}, #{content}, #{name}, #{phone}, #{status}, #{createTime})
+    </insert>
+
+
+    <select id="selectSuggestionWithReply" resultMap="SuggestionResultMap">
+        SELECT
+            s.id,
+            s.uid,
+            s.title,
+            s.type,
+            s.options,
+            s.content,
+            s.name,
+            s.phone,
+            s.status,
+            s.create_time,
+            r.id as reply_id,
+            r.sid,
+            r.content as reply_content,
+            r.status as reply_status,
+            r.create_time as reply_create_time
+        FROM
+            t_suggestion s
+                LEFT JOIN t_reply r ON s.id = r.sid
+        ORDER BY
+            s.create_time DESC
+    </select>
+
+    <update id="updateSuggestionStatus">
+        UPDATE t_suggestion SET status=1 WHERE id=#{id}
+    </update>
+
+    <select id="selectSuggestionWithReplyById" resultMap="SuggestionResultMap">
+        SELECT
+            s.id,
+            s.uid,
+            s.title,
+            s.type,
+            s.options,
+            s.content,
+            s.name,
+            s.phone,
+            s.status,
+            s.create_time,
+            r.id as reply_id,
+            r.sid,
+            r.content as reply_content,
+            r.status as reply_status,
+            r.create_time as reply_create_time
+        FROM
+            t_suggestion s
+                LEFT JOIN t_reply r ON s.id = r.sid
+        WHERE s.status=1 AND s.uid=#{id}
+        ORDER BY
+            s.create_time DESC
+    </select>
+
+</mapper>

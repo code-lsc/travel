@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.UserDao">
+
+    <resultMap id="UserResultMap" type="cn.ecut.travel.entity.UserEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="type" column="type"/>
+        <result property="phone" column="phone"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="headUrl" column="head_url"/>
+        <association property="address" javaType="cn.ecut.travel.entity.AddressEntity">
+            <id property="id" column="address_id"/>
+            <result property="province" column="province"/>
+            <result property="city" column="city"/>
+            <result property="country" column="country"/>
+        </association>
+    </resultMap>
+
+
+    <select id="selectCountByEmail" resultType="integer">
+        SELECT  count(1) FROM t_user WHERE email = #{email}
+    </select>
+
+    <select id="selectUserByEmail" resultMap="UserResultMap">
+        SELECT
+            u.id,
+            u.name,
+            u.sex,
+            u.age,
+            u.email,
+            u.type,
+            u.password,
+            u.phone,
+            a.id as address_id,
+            a.province,
+            a.city,
+            a.country,
+            u.status,
+            u.create_time,
+            u.head_url
+        FROM
+            t_user u
+                LEFT JOIN t_address a ON u.address = a.id
+        WHERE
+            u.email = #{email};
+
+    </select>
+
+    <insert id="insertUser" parameterType="cn.ecut.travel.entity.UserEntity">
+        INSERT INTO t_user (email, password,status, create_time, head_url)
+        VALUES (#{email}, #{password},#{status}, #{createTime}, #{headUrl})
+    </insert>
+
+    <update id="updateUserInfo" >
+        UPDATE t_user
+        SET
+            name = #{name},
+            sex = #{sex},
+            age = #{age},
+            phone = #{phone},
+            address=#{address.id}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateHeadUrl">
+        UPDATE t_user
+        SET
+            head_url=#{headUrl}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectPassword" resultType="string">
+        SELECT password FROM t_user WHERE id=#{id}
+    </select>
+
+    <update id="updatePassword">
+        UPDATE t_user
+        SET
+            password=#{password}
+        WHERE id=#{id}
+    </update>
+
+    <update id="updateUserByAdmin">
+        UPDATE t_user
+        SET type = #{type},
+            status = #{status}
+        WHERE id=#{id}
+    </update>
+
+    <select id="selectAllUser" resultMap="UserResultMap">
+        SELECT
+            u.id,
+            u.name,
+            u.sex,
+            u.age,
+            u.email,
+            u.type,
+            u.phone,
+            a.id as address_id,
+            a.province,
+            a.city,
+            a.country,
+            u.status,
+            u.create_time,
+            u.head_url
+        FROM
+            t_user u
+                LEFT JOIN t_address a ON u.address = a.id
+    </select>
+</mapper>

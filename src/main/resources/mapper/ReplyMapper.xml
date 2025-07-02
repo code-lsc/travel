@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.ReplyDao">
+
+    <insert id="insertReply" parameterType="cn.ecut.travel.entity.ReplyEntity">
+        INSERT INTO t_reply (sid, content, status, create_time)
+        VALUES (#{sid}, #{content}, #{status}, #{createTime})
+    </insert>
+
+    <update id="updateReplyStatus">
+        UPDATE t_reply SET status=1 WHERE id=#{id}
+    </update>
+</mapper>

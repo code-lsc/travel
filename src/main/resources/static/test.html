@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="./icon/travel_icon.png" type="image/x-icon">
+    <title>侠客行旅游网</title>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/element.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+    <link rel="stylesheet" href="css/element.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<div id="page1">
+
+<ul>
+    <li v-for="i in b" :key="i">
+        <el-image :src="/uploads/5de3557c3922430c83d580d64341f1fb.jpg"></el-image>
+        <el-image :src="a[i][1]"></el-image>
+    </li>
+</ul>
+
+</div>
+</body>
+<script type="text/javascript" src="js/test.js"></script>
+</html>

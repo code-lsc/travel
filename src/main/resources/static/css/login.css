@@ -1,0 +1,24 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.main{
+    background-image: url("../icon/background.png");
+    width: 1699px;
+    height: 953px;
+    background-size: cover; /* 调整图片大小以填充容器 */
+    background-position: center; /* 图片在容器中的位置 */
+}
+
+.register{
+    float: right;
+    width: 410px;
+    margin-top: 70px;
+    margin-right: 100px;
+}
+
+.el-form-item__label{
+    color: #000000;
+    font-weight: bold;
+}

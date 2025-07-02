@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../icon/travel_icon.png" type="image/x-icon">
+    <title>侠客行旅游网</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/element.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <link rel="stylesheet" href="../css/element.css">
+    <link rel="stylesheet" href="../css/scenery.css">
+</head>
+<body>
+<div id="page1">
+    <el-container >
+        <el-header>
+            <el-row>
+                <el-col :span="2"><div class="grid-content">
+                    <el-image src="../icon/travel_icon.png" style="height: 70px"/>
+                </div></el-col>
+                <el-col :span="3"><div class="grid-content">
+                    <h1 style="font-family: Hiragino Sans GB;font-size: 23px;font-style:italic;letter-spacing: 4px">侠客行旅游网</h1>
+                </div></el-col>
+                <el-col :span="9"><div class="grid-content"></div></el-col>
+                <el-col :span="5"><div class="grid-content">
+                    <el-input
+                            placeholder="请输入景点名"
+                            v-model="input"
+                            clearable
+                            style="width: 70%">
+                    </el-input>
+                    <el-button type="primary" icon="el-icon-search" style="padding: 12px 10px;" @click="search">搜索</el-button>
+                </div></el-col>
+                <el-col :span="5"></el-col>
+                <div class="grid-content" style="float: right;margin-right: 70px;display:flex;">
+                    <div style="font-size: 14px;color: #545c64;margin-right: 5px;width: 6em;overflow: hidden">
+                        {{userToken.name}}</div>
+                    <el-dropdown @command="handleCommand" v-if="isLogin" style="margin-top: 10px">
+                        <el-avatar icon="el-icon-user-solid" style="float: left" :src="userToken.headUrl"></el-avatar>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item command="center" icon="el-icon-s-custom">个人中心</el-dropdown-item>
+                            <el-dropdown-item command="message" icon="el-icon-chat-dot-square">
+                                <el-badge :value="noRead" :max="99" class="item">
+                                    回复
+                                </el-badge>
+                            </el-dropdown-item>
+                            <el-dropdown-item command="logout" icon="el-icon-switch-button">退出</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                    <div  style="margin-bottom: 10px;" v-else>
+                        <el-link type="primary" href="/site/login.html" :underline="false" style="margin-bottom: 30px">登录</el-link>
+                        <el-link type="primary" href="/site/register.html" :underline="false" style="margin-bottom: 30px">注册</el-link>
+                    </div>
+                </div>
+            </el-row>
+        </el-header>
+
+        <el-main >
+            <el-menu
+                    default-active="2"
+                    class="el-menu-demo"
+                    mode="horizontal"
+                    @select="handleSelect"
+                    background-color="#545c64"
+                    text-color="#fff"
+                    active-text-color="#ffd04b">
+                <el-menu-item index="1" @click="selectMenu(1)" style="width: 20%;font-size: 17px">首页</el-menu-item>
+                <el-menu-item index="2" @click="selectMenu(2)" style="width: 20%;font-size: 17px">旅游景点</el-menu-item>
+                <el-menu-item index="3" @click="selectMenu(3)" style="width: 20%;font-size: 17px">出行攻略</el-menu-item>
+                <el-menu-item index="5" @click="selectMenu(4)" style="width: 20%;font-size: 17px">旅游快讯</el-menu-item>
+                <el-menu-item index="6" @click="selectMenu(5)" style="width: 20%;font-size: 17px">投诉建议</el-menu-item>
+            </el-menu>
+            <div class="scenery-box" >
+                    <el-card style="margin-top: 10px;border: 2px solid #DCDFE6;background-color: #d9ecff;" :body-style="{padding:'10px'}">
+                        <div>
+                            <span style="font-size: 14px;color: #909399">地区：</span>
+                            <el-cascader
+                                    placeholder="请选择或搜索"
+                                    :options="options"
+                                    size="small"
+                                    :props="{ checkStrictly: true }"
+                                    filterable
+                                    clearable="true"
+                                    @change="handleAddressChange"></el-cascader>
+                            <span style="font-size: 14px;color: #909399">主题：</span>
+                            <el-select v-model="checkedTopic" filterable placeholder="请选择或搜素" size="small" clearable="true" @change="selectSceneryByCondition">
+                                <el-option
+                                        v-for="item in topics"
+                                        :key="item.id"
+                                        :label="item.name"
+                                        :value="item.id"
+                                        >
+                                </el-option>
+                            </el-select>
+                            <span style="font-size: 14px;color: #909399">星级：</span>
+                            <el-select v-model="checkedGrade" filterable placeholder="请选择或搜素" size="small" clearable="true" @change="selectSceneryByCondition">
+                                <el-option
+                                        v-for="item in stars"
+                                        :key="item.id"
+                                        :label="item.name"
+                                        :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </el-card>
+                <div class="scenery-indefinite">
+                    <div class="infinite-list-wrapper" style="overflow: hidden;">
+                        <ul
+
+                                class="list"
+                                v-infinite-scroll="load"
+                                infinite-scroll-disabled="disabled"
+                                infinite-scroll-distance="240"
+                                infinite-scroll-immediate="false">
+                            <li v-for="(item,index) in scenerys" :key="index" class="list-item" style="margin-top: 5px">
+                                <el-skeleton  :loading="loading" animated >
+                                    <template slot="template">
+                                        <div style="display: flex;">
+                                            <div style="flex: 1">
+                                                <el-skeleton-item
+                                                        variant="image"
+                                                        style="width: 240px;height: 240px;"/>
+                                            </div>
+                                            <div style="flex: 2">
+                                                <div><el-skeleton-item variant="h1" style="width: 300px;height: 50px"/></div>
+                                                <div align="left">
+                                                    <div><el-skeleton-item variant="text" style="width: 100px;height: 20px;margin-top: 5px"></el-skeleton-item></div>
+                                                    <div><el-skeleton-item variant="text" style="width: 100px;height: 20px;margin-top: 5px"></el-skeleton-item></div>
+                                                    <div><el-skeleton-item variant="text" style="width: 100px;height: 20px;margin-top: 5px"></el-skeleton-item></div>
+                                                    <div><el-skeleton-item variant="text" style="width: 400px;height: 100px;margin-top: 5px"></el-skeleton-item></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template>
+                                        <el-card :body-style="{ padding: '0px', marginBottom: '1px',display: 'flex',height: '335px'}"
+                                                 shadow="hover">
+                                            <div style="flex: 1">
+                                                <a :href="'/site/scenery-detail.html?id='+item.id" target="_blank">
+                                                    <el-image
+                                                            :src="item.imageUrl"
+                                                            class="image"
+                                                            fit="cover"
+
+                                                    >
+                                                        <div slot="placeholder" class="image-slot">
+                                                            加载中<span class="dot">...</span>
+                                                        </div>
+                                                    </el-image>
+                                                </a>
+                                            </div>
+                                            <div style="padding: 14px;flex: 2;background-color: #f0f9eb;">
+                                                <span style="font-size: 20px;color: #2da1e7"><a :href="'/site/scenery-detail.html?id='+item.id" target="_blank">{{item.name}}</a></span>
+                                                <el-divider></el-divider>
+                                                <div style="display: flex">
+                                                    <div style="flex: 3;">
+                                                        <div align="left">
+                                                            <span style="font-size: 16px">等级： </span>
+                                                            <span class="grade" v-if="item.grade === 0">无等级</span>
+                                                            <span class="grade" v-else-if="item.grade === 1">A A A</span>
+                                                            <span class="grade" v-else-if="item.grade === 2">A A A A</span>
+                                                            <span class="grade" v-else-if="item.grade === 3">A A A A A</span>
+                                                        </div>
+                                                        <div align="left" style="display: flex;margin-top: 5px">
+                                                            <div style="font-size: 16px;flex: 1">评分： </div>
+                                                                <el-rate
+                                                                    v-model="item.score"
+                                                                    disabled
+                                                                    show-score
+                                                                    text-color="#ff9900"
+                                                                    score-template="{value}"
+                                                                    style="flex: 8;margin-left: -8px">
+                                                                </el-rate>
+                                                            </div>
+                                                        <div align="left" style="margin-top: 5px">
+                                                            <span class="el-icon-location-information"/>
+                                                            <span style="font-size: 14px;color: #606266">{{item.address.province+item.address.city+item.address.country}}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div style="flex: 1" align="left" >
+                                                        <el-divider direction="vertical" ></el-divider>
+                                                        <div class="detail_c">
+                                                            <div class="price_b">
+                                                                <span class="orange" v-if="item.ticketPrice===0">
+                                                                    <b style="font-size: 30px;margin: 0px 4px">免费</b>
+                                                                </span>
+                                                                <span class="orange" v-else>
+                                                                    ¥<b style="font-size: 34px;margin: 0px 4px">{{item.ticketPrice}}</b>
+                                                                </span>
+
+                                                            </div>
+                                                            <a :href="'/site/scenery-detail.html?id='+item.id" class="detail_btn" target="_blank">查看详情</a>
+
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <el-divider></el-divider>
+                                                <div style="height: 160px;font-size: 14px;color: #606266;overflow: hidden;text-overflow: ellipsis;text-align: left">
+                                                 <span style="font-size: 16px;color: #303133;float: left;line-height: 1">简介：</span>
+                                                    {{item.profile}}
+                                                </div>
+                                            </div>
+                                        </el-card>
+                                    </template>
+                                </el-skeleton>
+                            </li>
+                        </ul>
+                        <p v-if="listLoading">加载中...</p>
+                        <p v-if="noMore">没有更多了</p>
+                    </div>
+                </div>
+            </div>
+        </el-main>
+        <el-drawer
+                title="消息中心"
+                :visible.sync="drawer"
+                direction="ltr"
+                size="40%">
+            <el-table
+                    :data="suggestions"
+                    style="width: 100%">
+                <el-table-column
+                        type="index"
+                        label="序号"
+                        width="80"
+                ></el-table-column>
+                <el-table-column
+                        prop="title"
+                        label="标题"
+                        width="200"
+                ></el-table-column>
+
+                <el-table-column
+                        prop="reply.status"
+                        label="状态"
+                        width="80"
+                        sortable
+                >
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.reply.status  ? 'success' : 'danger'" disable-transitions>
+                            {{scope.row.reply.status ? '已读' : '未读' }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="createTime"
+                        label="投诉时间"
+                        width="180"
+                        sortable
+                ></el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-popover
+                                ref="popover"
+                                placement="right"
+                                width="600"
+                                trigger="click">
+                            <el-descriptions class="margin-top" title="投诉详情" :column="3" :size="size" border>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-user"></i>
+                                        用户名
+                                    </template>
+                                    {{checkedSuggestion.name}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-mobile-phone"></i>
+                                        手机号
+                                    </template>
+                                    {{checkedSuggestion.phone}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        类型
+                                    </template>
+                                    <el-tag :type="checkedSuggestion.type  ? 'success' : 'danger'" disable-transitions>
+                                        {{checkedSuggestion.type ? '建议' : '投诉' }}
+                                    </el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-tickets"></i>
+                                        {{(checkedSuggestion.type ? '建议' : '投诉')+'事项'}}
+                                    </template>
+                                    {{checkedSuggestion.options}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        状态
+                                    </template>
+                                    <el-tag :type="checkedSuggestion.status  ? 'success' : 'danger'" disable-transitions>
+                                        {{checkedSuggestion.status ? '已处理' : '未处理' }}
+                                    </el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        投诉时间
+                                    </template>
+                                    {{checkedSuggestion.createTime}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-chat-dot-square"></i>
+                                        {{(checkedSuggestion.type ? '建议' : '投诉')+'内容'}}
+                                    </template>
+                                    {{checkedSuggestion.content}}
+                                </el-descriptions-item>
+                            </el-descriptions>
+                            <el-descriptions class="margin-top" title="回复信息" :column="1" :size="size" v-if="checkedSuggestion.reply!=null" border>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-chat-dot-square"></i>
+                                        回复内容
+                                    </template>
+                                    {{checkedSuggestion.reply.content}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        回复时间
+                                    </template>
+                                    {{checkedSuggestion.reply.createTime}}
+                                </el-descriptions-item>
+                            </el-descriptions>
+                            <el-button
+                                    size="mini"
+                                    type="primary"
+                                    plain
+                                    slot="reference"
+                                    @click="viewReply(scope.$index, scope.row )">查看</el-button>
+                        </el-popover>
+
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-drawer>
+    </el-container>
+</div>
+</body>
+<script type="text/javascript" src="../js/scenery.js"></script>
+</html>

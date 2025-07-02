@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.OrderDao">
+    <resultMap id="orderVoMap" type="cn.ecut.travel.vo.OrderVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="sceneryId" column="sceneryId"/>
+        <result property="price" column="price"/>
+        <result property="status" column="status"/>
+        <result property="useDate" column="useDate"/>
+        <result property="createTime" column="createTime"/>
+    </resultMap>
+
+    <resultMap id="orderResultMap" type="cn.ecut.travel.vo.OrderAdminVo">
+        <id property="id" column="id"/>
+        <result property="useDate" column="use_date"/>
+        <result property="status" column="status"/>
+        <result property="price" column="price"/>
+        <result property="createTime" column="create_time"/>
+        <!-- 使用association映射AddressEntity -->
+        <association property="scenery"  javaType="cn.ecut.travel.entity.SceneryEntity">
+            <id property="id" column="scenery_id"/>
+            <result property="name" column="scenery_name"/>
+        </association>
+        <association property="user" javaType="cn.ecut.travel.entity.UserEntity">
+            <id property="id" column="user_id"/>
+            <result property="name" column="user_name"/>
+        </association>
+    </resultMap>
+    <insert id="addOrder" parameterType="cn.ecut.travel.entity.OrderEntity">
+        INSERT INTO t_order (scenery_id, uid, price, use_date,create_time)
+        VALUES (#{sceneryId}, #{uid}, #{price}, #{useDate},#{createTime})
+    </insert>
+
+    <select id="selectOrderByUserId" resultMap="orderVoMap">
+        SELECT o.id, s.name, s.image_url AS imageUrl, o.scenery_id AS sceneryId, o.price, o.status, o.use_date AS useDate, o.create_time AS createTime
+        FROM t_order o
+                 JOIN t_scenery s ON o.scenery_id = s.id
+        WHERE o.uid = #{userId}
+        ORDER BY o.create_time
+        desc
+    </select>
+
+    <insert id="addOrderComment">
+        INSERT INTO t_scenery_comment(order_id, content, score, create_time, status)
+        VALUES(#{orderId}, #{content}, #{score}, #{createTime}, #{status})
+    </insert>
+
+    <select id="selectSceneryIdByOrderId" resultType="integer">
+        SELECT scenery_id FROM t_order WHERE id=#{orderId}
+    </select>
+
+    <update id="updateOrderStatus">
+        UPDATE t_order SET status=#{status} WHERE id=#{orderId}
+    </update>
+
+    <select id="selectAllOrder" resultMap="orderResultMap">
+        SELECT
+            o.id,
+            s.name AS scenery_name,
+            u.name AS user_name,
+            o.price,
+            o.use_date,
+            o.status,
+            o.create_time
+        FROM t_order o
+                 LEFT JOIN t_scenery s
+                           ON o.scenery_id = s.id
+                 LEFT JOIN t_user u
+                           ON o.uid = u.id
+
+    </select>
+
+    <delete id="deleteTicket">
+        DELETE FROM t_order WHERE id = #{id};
+    </delete>
+
+</mapper>

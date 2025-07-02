@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.AddressDao">
+
+    <select id="selectAllAddress" resultType="cn.ecut.travel.entity.AddressEntity">
+        select * from t_address
+    </select>
+
+    <select id="selectAddress" parameterType="cn.ecut.travel.entity.AddressEntity" resultType="cn.ecut.travel.entity.AddressEntity">
+        SELECT id, province, city, country
+        FROM t_address
+        <where>
+            <if test="province != null">
+                AND province = #{province}
+            </if>
+            <if test="city != null">
+                AND city = #{city}
+            </if>
+            <if test="country != null">
+                AND country = #{country}
+            </if>
+        </where>
+    </select>
+
+</mapper>

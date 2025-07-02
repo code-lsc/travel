@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.TopicDao">
+
+    <select id="selectAllTopic" resultType="cn.ecut.travel.entity.TopicEntity">
+        select * from t_topic
+    </select>
+
+    <insert id="insertTopic" parameterType="map">
+        INSERT t_scenery_topic (sid,tid) VALUES
+        <foreach collection="topicId" item="topic" separator="," >
+            (#{sceneryId}, #{topic})
+        </foreach>
+    </insert>
+
+    <select id="selectTopicBySceneryId" resultType="integer">
+        SELECT tid FROM t_scenery_topic WHERE sid =#{sceneryId}
+    </select>
+
+    <delete id="deleteTopicAndSceneryBySceneryId">
+        DELETE FROM t_scenery_topic WHERE sid = #{sceneryId};
+    </delete>
+</mapper>

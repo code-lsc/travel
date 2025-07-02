@@ -1,0 +1,163 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.el-header, .el-footer {
+    background-color:  #a0cfff;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+}
+
+.el-aside {
+    background-color: #D3DCE6;
+    color: #333;
+    text-align: center;
+    line-height: 200px;
+}
+
+.el-main {
+    background-color: #c6e2ff;
+    color: #333;
+    text-align: center;
+
+}
+
+body > .el-container {
+    margin-bottom: 40px;
+}
+
+.el-container:nth-child(5) .el-aside,
+.el-container:nth-child(6) .el-aside {
+    line-height: 260px;
+}
+
+.el-container:nth-child(7) .el-aside {
+    line-height: 320px;
+}
+
+
+.el-row {
+    margin-bottom: 20px;
+&:last-child {
+     margin-bottom: 0;
+ }
+}
+.el-col {
+    border-radius: 4px;
+}
+
+
+.el-carousel__item h3 {
+    color: #475669;
+    font-size: 14px;
+    opacity: 0.75;
+    line-height: 150px;
+    margin: 0;
+}
+
+.el-carousel__item:nth-child(2n) {
+    background-color: #99a9bf;
+}
+
+.el-carousel__item:nth-child(2n+1) {
+    background-color: #d3dce6;
+}
+
+.detail_c{
+    float: right;
+    background-color: #f63;
+    border-top-right-radius: 50px; /* 设置右上角的半径（此处使用了比较大的值） */
+    border-bottom-right-radius: 50px; /* 设置右下角的半径（此处使用了比较大的值） */
+}
+
+.price_b{
+    height: 55px;
+    line-height: 55px;
+    width: 150px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.detail_c .orange {
+    font-family: Arial;
+    color: white;
+    font-size: 16px;
+}
+
+.detail_c .detail_btn {
+    width: 115px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    display: block;
+    margin: 0 auto;
+    background-color: #ff7800;
+    font-size: 16px;
+    color: #fff;
+    border-radius: 3px;
+    text-decoration: none;
+}
+
+
+.main-div{
+    width: 80%;
+    margin: auto;
+    background-color: white;
+    padding: 2px;
+}
+
+.grade{
+    font-size: 14px;
+    color: #ff5704;
+
+}
+
+.el-rate__icon{
+    margin-right: 2px;
+}
+
+a {
+    text-decoration: none; /* 去除下划线 */
+    color: inherit; /* 继承父元素的文本颜色 */
+}
+
+.description{
+    font-size: 14px;
+    color: #999999;
+    height: 18px;
+    text-align: left;
+    margin-left: 15px;
+    margin-bottom: 18px
+}
+
+.title{
+    color: #4c5a65;
+    margin-bottom: 18px;
+    text-align: left;
+    margin-left: 15px;
+    margin-top: 20px
+}
+
+
+.bar{
+    flex: 1;
+    height: 2em;
+    padding-top: 0.5em;
+    transition: transform 0.3s; /* 添加过渡效果 */
+    border: 1px solid black;
+    background-color: #333333;
+    color: white;
+}
+
+.bar:hover {
+    transform: scale(1.1); /* 在悬停时放大元素 */
+    background-color: #ccc; /* 修改背景颜色 */
+}
+
+
+.time {
+    font-size: 13px;
+    color: #999;
+}

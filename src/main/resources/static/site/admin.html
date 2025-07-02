@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../icon/travel_icon.png" type="image/x-icon">
+    <title>侠客行旅游网</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/element.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <link rel="stylesheet" href="../css/element.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link href="../css/wangEditor.css" rel="stylesheet">
+    <style>
+        #editor—wrapper {
+            border: 1px solid #ccc;
+            z-index: 100; /* 按需定义 */
+        }
+        #toolbar-container { border-bottom: 1px solid #ccc; }
+        #editor-container { height: 500px; }
+    </style>
+</head>
+<body>
+<div id="page1">
+    <el-container style="height: 953px">
+        <el-aside width="15%">
+            <h3 style="height: 60px;text-align: center;line-height: 60px;background-color: #b3d8ff">后台管理平台</h3>
+            <el-menu
+                    default-active="1"
+                    class="el-menu-vertical-demo"
+                    @select="handleMenuSelect">
+                <el-submenu index="1">
+                    <template slot="title">
+                        <i class="el-icon-setting"></i>
+                        <span>网站管理</span>
+                    </template>
+                    <el-menu-item-group>
+                        <el-menu-item index="1-1">走马灯设置</el-menu-item>
+                        <el-menu-item index="1-2">热门城市管理</el-menu-item>
+                    </el-menu-item-group>
+                </el-submenu>
+                <el-submenu index="3">
+                    <template slot="title">
+                        <i class="el-icon-document"></i>
+                        <span>信息管理</span>
+                    </template>
+                    <el-menu-item-group>
+                        <el-menu-item index="3-1">景点信息发布</el-menu-item>
+                        <el-menu-item index="3-2">景点信息管理</el-menu-item>
+                        <el-menu-item index="3-3">旅游资讯发布</el-menu-item>
+                        <el-menu-item index="3-4">旅游资讯管理</el-menu-item>
+                        <el-menu-item index="3-5">投诉建议处理</el-menu-item>
+                    </el-menu-item-group>
+                </el-submenu>
+                <el-menu-item index="2">
+                    <i class="el-icon-user-solid"></i>
+                    <span slot="title">用户管理</span>
+                </el-menu-item>
+                <el-menu-item index="4">
+                    <i class="el-icon-s-order"></i>
+                    <span slot="title">订单管理</span>
+                </el-menu-item>
+                <!--<el-submenu index="4">
+                    <template slot="title">
+                        <i class="el-icon-s-marketing"></i>
+                        <span>数据分析</span>
+                    </template>
+                    <el-menu-item-group>
+                        <el-menu-item index="4-1">用户信息分析</el-menu-item>
+                        <el-menu-item index="4-2">景点信息分析</el-menu-item>
+                    </el-menu-item-group>
+                </el-submenu>-->
+            </el-menu>
+        </el-aside>
+        <el-container>
+            <el-header style="background-color: #b3d8ff;">
+                <el-row>
+                    <el-col :span="24"></el-col>
+                    <div class="grid-content" style="float: right;margin-right: 70px;display:flex;">
+                        <div style="font-size: 14px;color: #545c64;margin-right: 5px;width: 6em;height:18px;overflow: hidden;margin-top: 20px">
+                            {{userToken.name}}</div>
+                        <el-dropdown @command="logout" v-if="isLogin" style="margin-top: 10px">
+                            <el-avatar icon="el-icon-user-solid" style="float: left" :src="userToken.headUrl"></el-avatar>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item command="logout" icon="el-icon-switch-button">退出</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                        <div  style="margin-bottom: 10px;margin-top: 20px" v-else>
+                            <el-link type="primary" href="/site/login.html" :underline="false" style="margin-bottom: 30px">登录</el-link>
+                            <el-link type="primary" href="/site/register.html" :underline="false" style="margin-bottom: 30px">注册</el-link>
+                        </div>
+                    </div>
+                </el-row>
+
+            </el-header>
+            <el-main>
+                <div v-if="selectMenu === '1-1'">
+                    <div style="display: flex">
+                        <el-card v-for="item in imageForm" style="width: 200px;height: 200px;margin-bottom: 5px">
+                            <el-image :src="item" fit="cover"></el-image>
+                        </el-card>
+                    </div>
+                    <div v-for="(input, index) in imageForm" :key="index">
+                        <el-row>
+                            <el-col :span="18">
+                                <el-input v-model="imageForm[index]" placeholder="请输入图像链接" style="margin-bottom: 5px"></el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-button type="danger" icon="el-icon-delete" @click="removeInput(index,0)"></el-button>
+                            </el-col>
+                        </el-row>
+                    </div>
+                    <el-button type="primary" @click="addInput(0)">继续添加</el-button>
+                    <el-button type="primary" @click="updateCarousel">确认</el-button>
+
+                </div>
+                <div v-if="selectMenu === '1-2'">
+                    <div v-for="(input, index) in hotCity" :key="index">
+                        <el-row>
+                            <el-col :span="18">
+                                <el-input v-model="hotCity[index]" placeholder="请输入城市名" style="margin-bottom: 5px"></el-input>
+                            </el-col>
+                        </el-row>
+                    </div>
+                    <el-button type="primary" @click="updateHotCity">确认修改</el-button>
+                </div>
+                <div v-if="selectMenu === '2'">
+                    <el-table
+                            ref="filterTable"
+                            :data="users"
+                            style="width: 100%">
+                        <el-table-column
+                                type="index"
+                                label="序号"
+                                width="80"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="name"
+                                label="用户名"
+                                sortable
+                                width="150"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="sex"
+                                label="性别"
+                                width="60">
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.sex ? 'primary' : 'danger'" disable-transitions>
+                                    {{scope.row.sex ? '男' : '女'}}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="age"
+                                label="年龄"
+                                width="80"
+                                sortable>
+                        </el-table-column>
+                        <el-table-column
+                                prop="type"
+                                label="类型"
+                                width="80"
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.type  ? 'success' : 'primary'" disable-transitions>
+                                    {{ scope.row.type ? '管理员' : '普通用户' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="email"
+                                label="邮箱"
+                                width="180"
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="phone"
+                                label="电话"
+                                width="120"
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="address"
+                                label="地址"
+                                width="200"
+                        >
+                            <template slot-scope="scope">
+                                <i class="el-icon-location"></i>
+                                <span style="margin-left: 5px">{{ scope.row.address.province+ scope.row.address.city+scope.row.address.country}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="status"
+                                label="账号状态"
+                                width="80"
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.status  ? 'success' : 'danger'" disable-transitions>
+                                    {{ scope.row.status ? '正常' : '冻结' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="注册时间"
+                                width="160"
+                                sortable
+                        ></el-table-column>
+
+                        <el-table-column label="操作">
+                            <template slot-scope="scope" v-if="scope.row.email!= 'root'">
+                                <el-button
+                                        size="mini"
+                                        type="primary"
+                                        plain
+                                        @click="updateUserInfo(scope.$index, scope.row , 0)">{{scope.row.type  ? '取消管理员' : '设为管理员'}}</el-button>
+                                <el-button
+                                        size="mini"
+                                        type="danger"
+                                        plain
+                                        @click="updateUserInfo(scope.$index, scope.row , 1)">{{scope.row.status  ? '冻结账号' : '解除冻结'}}</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-if="selectMenu === '3-1'">
+                    <el-form label-position="right" label-width="80px" :model="sceneryForm" :rules="rules" ref="sceneryForm">
+                        <el-form-item label="首页图片" prop="imageUrl">
+                            <el-input v-model="sceneryForm.imageUrl"></el-input>
+                        </el-form-item>
+                        <el-form-item label="名称" prop="name">
+                            <el-input v-model="sceneryForm.name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="等级" prop="grade">
+                            <el-select v-model="sceneryForm.grade" placeholder="请选择景点等级">
+                                <el-option label="无等级" value="0"></el-option>
+                                <el-option label="3A级" value="1"></el-option>
+                                <el-option label="4A级" value="2"></el-option>
+                                <el-option label="5A级" value="3"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="主题" prop="topic">
+                            <el-select v-model="sceneryForm.topic" multiple placeholder="请选择">
+                                <el-option
+                                        v-for="item in topics"
+                                        :key="item.id"
+                                        :label="item.name"
+                                        :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="地址" prop="address">
+                            <el-cascader
+                                    v-model="checkedAddress"
+                                    :options="address"
+                                    :props="{ expandTrigger: 'hover' }"
+                                    @change="handleSelectAddress"
+                                    filterable></el-cascader>
+                        </el-form-item>
+                        <el-form-item label="状态">
+                            <el-switch
+                                    v-model="sceneryForm.status"
+                                    active-color="#13ce66"
+                                    inactive-color="#ff4949">
+                            </el-switch>
+                        </el-form-item>
+                        <el-form-item label="景区简介" prop="profile">
+                            <el-input v-model="sceneryForm.profile" type="textarea" :autosize="{ minRows: 2}"></el-input>
+                        </el-form-item>
+                        <el-form-item label="票价" prop="ticketPrice">
+                            <el-input v-model="sceneryForm.ticketPrice"></el-input>
+                        </el-form-item>
+                        <el-form-item label="预定须知" prop="attention">
+                            <el-input v-model="sceneryForm.attention" type="textarea" :autosize="{ minRows: 2}"></el-input>
+                        </el-form-item>
+                        <el-form-item label="景区描述" prop="description">
+                            <el-input v-model="sceneryForm.description"></el-input>
+                        </el-form-item>
+                        <el-form-item label="详情图片" prop="urls">
+                            <div v-for="(input, index) in sceneryForm.urls" :key="index">
+                                <el-row>
+                                    <el-col :span="18">
+                                        <el-input v-model="sceneryForm.urls[index]" placeholder="请输入图像链接" style="margin-bottom: 5px"></el-input>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-button type="danger" icon="el-icon-delete" @click="removeInput(index,1)"></el-button>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                            <el-button type="primary" @click="addInput(1)">继续添加</el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="submitScenery" style="float: right">立即发布</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div v-if="selectMenu === '3-2'">
+                    <el-table
+                            ref="filterTable"
+                            :data="scenery"
+                            style="width: 100%">
+                        <el-table-column
+                                type="index"
+                                label="序号"
+                                width="100"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="name"
+                                label="景点名"
+                                width="200"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="grade"
+                                label="等级"
+                                width="100">
+                            <template slot-scope="scope">
+                                <el-tag type="danger" disable-transitions>
+                                    {{ scope.row.grade === 0 ? '无' :
+                                    scope.row.grade === 1 ? '3A' :
+                                    scope.row.grade === 2 ? '4A' :
+                                    scope.row.grade === 3 ? '5A' :
+                                    '' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="grade"
+                                label="等级"
+                                width="200">
+                            <template slot-scope="scope">
+                                <el-image :src="scope.row.imageUrl" fit="fill" style="height: 100px"></el-image>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="ticketPrice"
+                                label="票价"
+                                width="100"
+                                sortable>
+                        </el-table-column>
+                        <el-table-column
+                                prop="score"
+                                label="评分"
+                                width="100"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="status"
+                                label="状态"
+                                width="100"
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.status  ? 'success' : 'danger'" disable-transitions>
+                                    {{ scope.row.status ? '正常' : '关闭' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="注册时间"
+                                width="170"
+                                sortable
+                        ></el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="90"
+                        >
+                            <template slot-scope="scope">
+                                <el-button
+                                        size="mini"
+                                        type="primary"
+                                        plain
+                                        @click="loadSceneryInfoById(scope.$index, scope.row)">修改信息</el-button>
+                            </template>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                align="right">
+                            <template slot="header" slot-scope="scope">
+                                <div style="display: flex">
+                                    <el-input
+                                            v-model="sceneryInput"
+                                            size="small"
+                                            placeholder="输入关键字搜索"
+                                            clearable>
+                                    </el-input>
+                                    <el-button type="primary" size="small" @click="searchScenery">搜索</el-button>
+                                </div>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-if="selectMenu === '3-3'">
+                    <div style="display: flex;margin-top: 20px;margin-bottom: 20px">
+                        <h2 style="color: #66b1ff">标题：</h2>
+                        <div style="flex: 30"><el-input
+                                type="text"
+                                placeholder="请输入标题"
+                                v-model="news.title"
+                                maxlength="20"
+                                show-word-limit
+                                clearable="true"
+                        ></el-input></div>
+                    </div>
+                    <div style="display: flex;margin-bottom: 20px">
+                        <h2 class="left_title">内容：</h2>
+                        <div id="editor—wrapper" style="flex: 19">
+                            <div id="toolbar-container"><!-- 工具栏 --></div>
+                            <div id="editor-container"><!-- 编辑器 --></div>
+                        </div>
+                    </div>
+                    <div style="margin-left: 45%">
+                        <el-button type="primary" @click="addNews">提交</el-button>
+                        <el-button type="info" @click="clearNews">清空</el-button>
+                    </div>
+                </div>
+                <div v-if="selectMenu === '3-4'">
+                    <el-table
+                            ref="filterTable"
+                            :data="news"
+                            style="width: 100%">
+                        <el-table-column
+                                type="index"
+                                label="序号"
+                                width="150"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="title"
+                                label="标题"
+                                width="600"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="status"
+                                label="状态"
+                                width="100"
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.status  ? 'success' : 'danger'" disable-transitions>
+                                    {{ scope.row.status ? '正常' : '下架' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="发布时间"
+                                width="200"
+                                sortable
+                        ></el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="100">
+                            <template slot-scope="scope" v-if="scope.row.email!= 'root'">
+                                <el-button
+                                        size="mini"
+                                        :type="scope.row.status  ? 'danger' : 'primary'"
+                                        plain
+                                        @click="updateNews(scope.$index, scope.row )">{{scope.row.status  ? '下架' : '恢复'}}</el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                align="right">
+                            <template slot="header" slot-scope="scope">
+                                <div style="display: flex">
+                                    <el-input
+                                            v-model="newsInput"
+                                            size="small"
+                                            placeholder="输入关键字搜索"
+                                            clearable>
+                                    </el-input>
+                                    <el-button type="primary" size="small" @click="searchScenery">搜索</el-button>
+                                </div>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-if="selectMenu === '3-5'">
+                    <el-table
+                            :data="suggestions"
+                            style="width: 100%">
+                        <el-table-column
+                                type="index"
+                                label="序号"
+                                width="120"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="title"
+                                label="标题"
+                                width="300"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="type"
+                                label="类型"
+                                width="120"
+                                sortable
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.type  ? 'success' : 'danger'" disable-transitions>
+                                    {{scope.row.type ? '建议' : '投诉' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="options"
+                                label="投诉事项"
+                                width="300"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="status"
+                                label="状态"
+                                width="120"
+                                sortable
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.status  ? 'success' : 'danger'" disable-transitions>
+                                    {{scope.row.status ? '已处理' : '未处理' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="投诉时间"
+                                width="200"
+                                sortable
+                        ></el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="scope" v-if="scope.row.email!= 'root'">
+                                <el-button
+                                        size="mini"
+                                        type="primary"
+                                        plain
+                                        @click="viewSuggestion(scope.$index, scope.row )">查看</el-button>
+                                <el-button
+                                        size="mini"
+                                        type="primary"
+                                        plain
+                                        @click="handleSuggestion(scope.$index, scope.row )" v-if="scope.row.status===0">去处理</el-button>
+
+                            </template>
+                        </el-table-column>
+                    </el-table>
+
+                </div>
+                <div v-if="selectMenu === '4'">
+                    <el-table
+                            ref="filterTable"
+                            :data="orders"
+                            style="width: 100%">
+                        <el-table-column
+                                prop="id"
+                                label="订单号"
+                                width="150"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="scenery.name"
+                                label="景点名"
+                                width="150"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="user.name"
+                                label="用户"
+                                width="150"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="price"
+                                label="票价"
+                                width="100"
+                        ></el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="使用时间"
+                                width="180"
+                                sortable
+                        ></el-table-column>
+                        <el-table-column
+                                prop="status"
+                                label="状态"
+                                width="100"
+                        >
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.status  ? 'success' : 'danger'" disable-transitions>
+                                    {{ scope.row.status ? '已消费' : '未消费' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="购买日期"
+                                width="180"
+                                sortable
+                        ></el-table-column>
+                        <el-table-column
+                                label="操作"
+                                width="150">
+                            <template slot-scope="scope" v-if="scope.row.email!= 'root'">
+                                <el-button
+                                        size="mini"
+                                        type="danger"
+                                        plain
+                                        v-if="scope.row.status===0"
+                                        @click="quitTicket(scope.$index, scope.row )">退票</el-button>
+                                <el-button
+                                        size="mini"
+                                        type="primary"
+                                        plain
+                                        v-if="scope.row.status===0"
+                                        @click="writeOff(scope.$index, scope.row )">核销</el-button>
+
+                            </template>
+                        </el-table-column>
+
+                    </el-table>
+                </div>
+                <el-dialog title="修改信息" :visible.sync="dialogFormVisible">
+                    <el-form label-position="right" label-width="80px" :model="sceneryForm" :rules="rules" ref="sceneryForm">
+                        <el-form-item label="首页图片" prop="imageUrl">
+                            <el-input v-model="sceneryForm.imageUrl"></el-input>
+                        </el-form-item>
+                        <el-form-item label="名称" prop="name">
+                            <el-input v-model="sceneryForm.name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="等级" prop="grade">
+                            <el-select v-model="sceneryForm.grade" placeholder="请选择景点等级">
+                                <el-option label="无等级" value="0"></el-option>
+                                <el-option label="3A级" value="1"></el-option>
+                                <el-option label="4A级" value="2"></el-option>
+                                <el-option label="5A级" value="3"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="主题" prop="topic">
+                            <el-select v-model="sceneryForm.topic" multiple placeholder="请选择">
+                                <el-option
+                                        v-for="item in topics"
+                                        :key="item.id"
+                                        :label="item.name"
+                                        :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="地址" prop="address">
+                            <el-cascader
+                                    v-model="checkedAddress"
+                                    :options="address"
+                                    :props="{ expandTrigger: 'hover' }"
+                                    @change="handleSelectAddress"
+                                    filterable></el-cascader>
+                        </el-form-item>
+                        <el-form-item label="状态">
+                            <el-switch
+                                    v-model="sceneryForm.status"
+                                    active-color="#13ce66"
+                                    inactive-color="#ff4949">
+                            </el-switch>
+                        </el-form-item>
+                        <el-form-item label="景区简介" prop="profile">
+                            <el-input v-model="sceneryForm.profile" type="textarea" :autosize="{ minRows: 2}"></el-input>
+                        </el-form-item>
+                        <el-form-item label="票价" prop="ticketPrice">
+                            <el-input v-model="sceneryForm.ticketPrice"></el-input>
+                        </el-form-item>
+                        <el-form-item label="预定须知" prop="attention">
+                            <el-input v-model="sceneryForm.attention" type="textarea" :autosize="{ minRows: 2}"></el-input>
+                        </el-form-item>
+                        <el-form-item label="景区描述" prop="description">
+                            <el-input v-model="sceneryForm.description"></el-input>
+                        </el-form-item>
+                        <el-form-item label="详情图片" prop="urls">
+                            <div v-for="(input, index) in sceneryForm.urls" :key="index">
+                                <el-row>
+                                    <el-col :span="18">
+                                        <el-input v-model="sceneryForm.urls[index]" placeholder="请输入图像链接" style="margin-bottom: 5px"></el-input>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-button type="danger" icon="el-icon-delete" @click="removeInput(index,1)"></el-button>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                            <el-button type="primary" @click="addInput(1)">继续添加</el-button>
+                        </el-form-item>
+                    </el-form>
+
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogFormVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="updateSceneryInfo">确 定</el-button>
+                    </div>
+                </el-dialog>
+                <el-dialog
+                        :visible.sync="suggestionDialogVisible"
+                        width="50%">
+                    <el-descriptions class="margin-top" title="投诉详情" :column="3" :size="size" border>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                <i class="el-icon-user"></i>
+                                用户名
+                            </template>
+                            {{checkedSuggestion.name}}
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                <i class="el-icon-mobile-phone"></i>
+                                手机号
+                            </template>
+                            {{checkedSuggestion.phone}}
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                类型
+                            </template>
+                            <el-tag :type="checkedSuggestion.type  ? 'success' : 'danger'" disable-transitions>
+                                {{checkedSuggestion.type ? '建议' : '投诉' }}
+                            </el-tag>
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                <i class="el-icon-tickets"></i>
+                                {{(checkedSuggestion.type ? '建议' : '投诉')+'事项'}}
+                            </template>
+                            {{checkedSuggestion.options}}
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                状态
+                            </template>
+                            <el-tag :type="checkedSuggestion.status  ? 'success' : 'danger'" disable-transitions>
+                                {{checkedSuggestion.status ? '已处理' : '未处理' }}
+                            </el-tag>
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                投诉时间
+                            </template>
+                           {{checkedSuggestion.createTime}}
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                <i class="el-icon-chat-dot-square"></i>
+                                {{(checkedSuggestion.type ? '建议' : '投诉')+'内容'}}
+                            </template>
+                            {{checkedSuggestion.content}}
+                        </el-descriptions-item>
+                    </el-descriptions>
+                    <el-descriptions class="margin-top" title="回复信息" :column="1" :size="size" v-if="checkedSuggestion.reply!=null" border>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                <i class="el-icon-chat-dot-square"></i>
+                                回复内容
+                            </template>
+                            {{checkedSuggestion.reply.content}}
+                        </el-descriptions-item>
+                        <el-descriptions-item>
+                            <template slot="label">
+                                回复时间
+                            </template>
+                            {{checkedSuggestion.reply.createTime}}
+                        </el-descriptions-item>
+                    </el-descriptions>
+                    <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="suggestionDialogVisible = false">关闭</el-button>
+                    </span>
+                </el-dialog>
+                <el-dialog
+                        title="请输入回复内容"
+                        :visible.sync="replyDialog"
+                        width="30%"
+                        center>
+                    <el-input
+                            style="font-size: 18px"
+                            type="textarea"
+                            :autosize="{ minRows: 2, maxRows: 6}"
+                            placeholder="请输入内容"
+                            v-model="reply.content">
+                    </el-input>
+                    <span slot="footer" class="dialog-footer">
+                    <el-button @click="replyDialog = false">取 消</el-button>
+                     <el-button type="primary" @click="sendReply">确 定</el-button>
+                     </span>
+                </el-dialog>
+            </el-main>
+        </el-container>
+    </el-container>
+
+</div>
+
+</body>
+<script type="text/javascript" src="../js/wangEditor.js"></script>
+<script type="text/javascript" src="../js/admin.js"></script>
+
+</script>
+</html>

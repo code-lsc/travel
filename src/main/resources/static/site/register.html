@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../icon/travel_icon.png" type="image/x-icon">
+    <title>注册页面</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/element.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <link rel="stylesheet" href="../css/element.css">
+    <link rel="stylesheet" href="../css/register.css">
+
+</head>
+<body>
+<div id="register">
+<div class="main">
+    <div class="register">
+        <h2 style="text-align: center;margin-bottom: 30px;color: #2da1e7">用户注册</h2>
+        <el-form ref="form" :model="form" label-width="80px" :rules="rules">
+            <el-form-item
+                    label="邮箱号"
+                    prop="email">
+                <el-input v-model="form.email" placeholder="请输入邮箱号"></el-input>
+            </el-form-item>
+            <el-form-item
+                    label="密码"
+                    prop="password">
+                <el-input v-model="form.password" placeholder="请输入密码" show-password="true"></el-input>
+            </el-form-item>
+            <el-form-item
+                    label="确认密码"
+                    prop="okPassword">
+                <el-input v-model="form.okPassword" placeholder="请确认密码" show-password="true"></el-input>
+            </el-form-item>
+            <el-form-item
+                    label="验证码"
+                    prop="code">
+                <div style="height: 41px;">
+                    <div style="width: 95px;float: left">
+                        <el-input v-model="form.code" placeholder="验证码" ></el-input>
+                    </div>
+                    <div :class="codeBtnStyle">
+                        <el-button
+                                type="primary"
+                                :disabled="countdown > 0"
+                                :loading="countdown > 0"
+                                style="padding: 12px 10px"
+                                @click="startCountdown"
+                        >
+                            {{ countdown > 0 ? `${countdown} 秒后重新发送` : '获取验证码' }}
+                        </el-button>
+                    </div>
+                </div>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="onSubmit">免费注册</el-button>
+                <span style="margin-left: 60px;">已有账号</span><el-link type="primary" :underline="false" href="/site/login.html">立即登录</el-link>
+            </el-form-item>
+        </el-form>
+    </div>
+</div>
+
+</div>
+
+</body>
+<script type="text/javascript" src="../js/register.js"></script>
+</html>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.ecut.travel.dao.StrategyDao">
+
+    <resultMap id="strategyResultMap" type="cn.ecut.travel.vo.StrategyVo">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="uid" column="uid"/>
+        <result property="name" column="name"/>
+        <result property="headUrl" column="head_url"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <resultMap id="strategyDetailResultMap" type="cn.ecut.travel.vo.StrategyDetailVo">
+        <id property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="name" column="name"/>
+        <result property="headUrl" column="head_url"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insertStrategy" parameterType="cn.ecut.travel.entity.StrategyEntity">
+        INSERT INTO t_strategy (title, content, status, uid, image_url, create_time)
+        VALUES (#{title}, #{content}, #{status}, #{uid}, #{imageUrl}, #{createTime})
+    </insert>
+
+    <select id="selectKey" resultType="integer">
+        SELECT id FROM t_strategy WHERE uid=#{uid} AND image_url=#{imageUrl}
+    </select>
+
+    <select id="selectStrategyAllOrBySceneryName" resultMap="strategyResultMap">
+        SELECT
+            s.id ,
+            s.title,
+            s.image_url ,
+            s.uid,
+            u.name,
+            u.head_url,
+            s.create_time
+        FROM
+            t_strategy s
+                JOIN
+            t_user u ON s.uid = u.id
+        WHERE
+            s.status = 1
+        <if test="sceneryName != null and sceneryName != '' ">
+            AND s.id IN (SELECT strategy_id FROM t_strategy_scenery WHERE scenery_id=(SELECT id FROM t_scenery WHERE name=#{sceneryName}))
+        </if>
+        LIMIT #{page},#{size};
+
+    </select>
+
+    <select id="getStrategyCount" resultType="long">
+        select count(1)
+        FROM t_strategy s
+        <if test="sceneryName != null and sceneryName != ''">
+            JOIN t_strategy_scenery ss ON s.id = ss.strategy_id
+            JOIN t_scenery sc ON ss.scenery_id = sc.id
+            WHERE sc.name=#{sceneryName} AND s.status = 1
+        </if>
+        <if test="sceneryName == null or sceneryName == ''">
+            WHERE s.status = 1
+        </if>
+    </select>
+
+    <select id="selectStrategyById" resultMap="strategyDetailResultMap">
+        SELECT
+            s.id,
+            s.uid,
+            u.name,
+            u.head_url,
+            s.title,
+            s.content,
+            s.image_url,
+            s.create_time
+        FROM t_strategy s
+                 LEFT JOIN t_user u
+                           ON s.uid=u.id
+        WHERE s.status=1 AND s.id=#{strategyId}
+    </select>
+
+    <update id="deleteStrategyById">
+        UPDATE t_strategy
+        SET status=0
+        WHERE id=#{strategyId}
+    </update>
+
+    <select id="selectStrategyByKey" resultMap="strategyResultMap">
+        SELECT
+            s.id ,
+            s.title,
+            s.image_url ,
+            s.uid,
+            u.name,
+            u.head_url,
+            s.create_time
+        FROM
+            t_strategy s
+                JOIN
+            t_user u ON s.uid = u.id
+        WHERE
+            s.status = 1 AND s.title LIKE #{key}
+    </select>
+
+    <select id="selectStrategyByUid" resultType="cn.ecut.travel.vo.StrategySettingVo">
+        SELECT id,title,create_time AS createTime FROM t_strategy WHERE status=1 AND uid=#{uid}
+    </select>
+
+
+</mapper>

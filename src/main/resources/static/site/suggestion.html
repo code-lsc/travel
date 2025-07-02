@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../icon/travel_icon.png" type="image/x-icon">
+    <title>侠客行旅游网</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/element.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <link rel="stylesheet" href="../css/element.css">
+    <link rel="stylesheet" href="../css/suggestion.css">
+</head>
+<body>
+<div id="page1">
+    <el-container >
+        <el-header>
+            <el-row>
+                <el-col :span="2"><div class="grid-content">
+                    <el-image src="../icon/travel_icon.png" style="height: 70px"/>
+                </div></el-col>
+                <el-col :span="3"><div class="grid-content">
+                    <h1 style="font-family: Hiragino Sans GB;font-size: 23px;font-style:italic;letter-spacing: 4px">侠客行旅游网</h1>
+                </div></el-col>
+                <el-col :span="9"><div class="grid-content"></div></el-col>
+                <el-col :span="5"><div class="grid-content">
+
+                </div></el-col>
+                <el-col :span="5"></el-col>
+                <div class="grid-content" style="float: right;margin-right: 70px;display:flex;">
+                    <div style="font-size: 14px;color: #545c64;margin-right: 5px;width: 6em;overflow: hidden">
+                        {{userToken.name}}</div>
+                    <el-dropdown @command="handleCommand" v-if="isLogin" style="margin-top: 10px">
+                        <el-avatar icon="el-icon-user-solid" style="float: left" :src="userToken.headUrl"></el-avatar>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item command="center" icon="el-icon-s-custom">个人中心</el-dropdown-item>
+                            <el-dropdown-item command="message" icon="el-icon-chat-dot-square">
+                                <el-badge :value="noRead" :max="99" class="item">
+                                    回复
+                                </el-badge>
+                            </el-dropdown-item>
+                            <el-dropdown-item command="logout" icon="el-icon-switch-button">退出</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                    <div  style="margin-bottom: 10px;" v-else>
+                        <el-link type="primary" href="/site/login.html" :underline="false" style="margin-bottom: 30px">登录</el-link>
+                        <el-link type="primary" href="/site/register.html" :underline="false" style="margin-bottom: 30px">注册</el-link>
+                    </div>
+                </div>
+            </el-row>
+        </el-header>
+
+        <el-main >
+            <el-menu
+                    default-active="6"
+                    class="el-menu-demo"
+                    mode="horizontal"
+                    @select="handleSelect"
+                    background-color="#545c64"
+                    text-color="#fff"
+                    active-text-color="#ffd04b">
+                <el-menu-item index="1" @click="selectMenu(1)" style="width: 20%;font-size: 17px">首页</el-menu-item>
+                <el-menu-item index="2" @click="selectMenu(2)" style="width: 20%;font-size: 17px">旅游景点</el-menu-item>
+                <el-menu-item index="3" @click="selectMenu(3)" style="width: 20%;font-size: 17px">出行攻略</el-menu-item>
+                <el-menu-item index="5" @click="selectMenu(4)" style="width: 20%;font-size: 17px">旅游快讯</el-menu-item>
+                <el-menu-item index="6" @click="selectMenu(5)" style="width: 20%;font-size: 17px">投诉建议</el-menu-item>
+            </el-menu>
+            <div class="scenery-box" >
+                <div style="height: 30px"></div>
+                <div style="background-color: #F2F6FC;padding: 30px;text-align: left;overflow: hidden">
+                    <el-form ref="form" :model="form" label-width="80px" :rules="rules">
+                        <el-form-item
+                                label="标题"
+                                prop="title"
+                                >
+                            <el-input v-model="form.title"></el-input>
+                        </el-form-item>
+                        <el-form-item
+                                label="类型"
+                                prop="type">
+                            <el-select v-model="form.type" placeholder="请选择类型"  @change="onTypeChange">
+                                <el-option label="投诉" value="0" ></el-option>
+                                <el-option label="建议" value="1"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        </el-form-item>
+                        <el-form-item v-if="form.type === '0'" label="投诉内容" prop="complaintList">
+                            <el-checkbox-group v-model="form.options">
+                                <el-checkbox label="服务质量"></el-checkbox>
+                                <el-checkbox label="安全问题"></el-checkbox>
+                                <el-checkbox label="环境卫生"></el-checkbox>
+                                <el-checkbox label="欺诈行为"></el-checkbox>
+                                <el-checkbox label="其他"></el-checkbox>
+                            </el-checkbox-group>
+                        </el-form-item>
+                        <el-form-item v-if="form.type === '1'" label="建议内容" prop="complaintList">
+                            <el-radio-group v-model="form.options">
+                                <el-radio label="网页内容"></el-radio>
+                                <el-radio label="功能优化"></el-radio>
+                                <el-radio label="故障上报"></el-radio>
+                                <el-radio label="交互体验"></el-radio>
+                                <el-radio label="其它"></el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="内容" prop="content">
+                            <el-input type="textarea" v-model="form.content"  rows="6"></el-input>
+                        </el-form-item>
+                        <el-form-item label="姓名" prop="name">
+                            <el-input v-model="form.name" placeholder="请输入姓名"></el-input>
+                        </el-form-item>
+                        <el-form-item label="联系方式" prop="contactWay">
+                            <el-input v-model="form.phone" placeholder="请输入手机号或邮箱"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="onSubmit">立即提交</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </div>
+        </el-main>
+        <el-drawer
+                title="消息中心"
+                :visible.sync="drawer"
+                direction="ltr"
+                size="40%">
+            <el-table
+                    :data="suggestions"
+                    style="width: 100%">
+                <el-table-column
+                        type="index"
+                        label="序号"
+                        width="80"
+                ></el-table-column>
+                <el-table-column
+                        prop="title"
+                        label="标题"
+                        width="200"
+                ></el-table-column>
+
+                <el-table-column
+                        prop="reply.status"
+                        label="状态"
+                        width="80"
+                        sortable
+                >
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.reply.status  ? 'success' : 'danger'" disable-transitions>
+                            {{scope.row.reply.status ? '已读' : '未读' }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="createTime"
+                        label="投诉时间"
+                        width="180"
+                        sortable
+                ></el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-popover
+                                ref="popover"
+                                placement="right"
+                                width="600"
+                                trigger="click">
+                            <el-descriptions class="margin-top" title="投诉详情" :column="3" :size="size" border>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-user"></i>
+                                        用户名
+                                    </template>
+                                    {{checkedSuggestion.name}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-mobile-phone"></i>
+                                        手机号
+                                    </template>
+                                    {{checkedSuggestion.phone}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        类型
+                                    </template>
+                                    <el-tag :type="checkedSuggestion.type  ? 'success' : 'danger'" disable-transitions>
+                                        {{checkedSuggestion.type ? '建议' : '投诉' }}
+                                    </el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-tickets"></i>
+                                        {{(checkedSuggestion.type ? '建议' : '投诉')+'事项'}}
+                                    </template>
+                                    {{checkedSuggestion.options}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        状态
+                                    </template>
+                                    <el-tag :type="checkedSuggestion.status  ? 'success' : 'danger'" disable-transitions>
+                                        {{checkedSuggestion.status ? '已处理' : '未处理' }}
+                                    </el-tag>
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        投诉时间
+                                    </template>
+                                    {{checkedSuggestion.createTime}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-chat-dot-square"></i>
+                                        {{(checkedSuggestion.type ? '建议' : '投诉')+'内容'}}
+                                    </template>
+                                    {{checkedSuggestion.content}}
+                                </el-descriptions-item>
+                            </el-descriptions>
+                            <el-descriptions class="margin-top" title="回复信息" :column="1" :size="size" v-if="checkedSuggestion.reply!=null" border>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        <i class="el-icon-chat-dot-square"></i>
+                                        回复内容
+                                    </template>
+                                    {{checkedSuggestion.reply.content}}
+                                </el-descriptions-item>
+                                <el-descriptions-item>
+                                    <template slot="label">
+                                        回复时间
+                                    </template>
+                                    {{checkedSuggestion.reply.createTime}}
+                                </el-descriptions-item>
+                            </el-descriptions>
+                            <el-button
+                                    size="mini"
+                                    type="primary"
+                                    plain
+                                    slot="reference"
+                                    @click="viewReply(scope.$index, scope.row )">查看</el-button>
+                        </el-popover>
+
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-drawer>
+    </el-container>
+</div>
+</body>
+<script type="text/javascript" src="../js/suggestion.js"></script>
+</html>

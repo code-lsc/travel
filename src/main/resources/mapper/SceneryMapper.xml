@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ecut.travel.dao.SceneryDao">
+    <resultMap id="IndexVoResultMap" type="cn.ecut.travel.vo.IndexVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="grade" column="grade"/>
+        <result property="profile" column="profile"/>
+        <result property="score" column="score"/>
+        <result property="imageUrl" column="image_url"/>
+        <association property="address" javaType="cn.ecut.travel.entity.AddressEntity">
+            <id property="id" column="address_id"/>
+            <result property="province" column="province"/>
+            <result property="city" column="city"/>
+            <result property="country" column="country"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="sceneryVoResultMap" type="cn.ecut.travel.vo.SceneryVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="grade" column="grade"/>
+        <result property="profile" column="profile"/>
+        <result property="score" column="score"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="ticketPrice" column="ticket_price"/>
+        <association property="address" javaType="cn.ecut.travel.entity.AddressEntity">
+            <id property="id" column="address_id"/>
+            <result property="province" column="province"/>
+            <result property="city" column="city"/>
+            <result property="country" column="country"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="sceneryDetailResultMap" type="cn.ecut.travel.vo.SceneryDetailVo">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="grade" column="grade"/>
+        <result property="profile" column="profile"/>
+        <result property="ticketPrice" column="ticket_price"/>
+        <result property="attention" column="attention"/>
+        <result property="description" column="description"/>
+        <result property="score" column="score"/>
+        <association property="address" javaType="cn.ecut.travel.entity.AddressEntity">
+            <id property="id" column="address_id"/>
+            <result property="province" column="province"/>
+            <result property="city" column="city"/>
+            <result property="country" column="country"/>
+        </association>
+        <collection property="urls" ofType="String" >
+            <result column="url"/>
+        </collection>
+
+    </resultMap>
+
+    <resultMap id="SceneryDtoResultMap" type="cn.ecut.travel.dto.SceneryDto">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="grade" property="grade"/>
+        <result column="profile" property="profile"/>
+        <result column="status" property="status"/>
+        <result column="ticketPrice" property="ticketPrice"/>
+        <result column="attention" property="attention"/>
+        <result column="description" property="description"/>
+        <result column="imageUrl" property="imageUrl"/>
+        <association property="address" javaType="cn.ecut.travel.entity.AddressEntity">
+            <id property="id" column="address_id"/>
+            <result property="province" column="province"/>
+            <result property="city" column="city"/>
+            <result property="country" column="country"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="allSceneryResultMap" type="cn.ecut.travel.entity.SceneryEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="grade" column="grade"/>
+        <result property="profile" column="profile"/>
+        <result property="status" column="status"/>
+        <result property="ticketPrice" column="ticket_price"/>
+        <result property="attention" column="attention"/>
+        <result property="score" column="score"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="imageUrl" column="image_url"/>
+        <!-- 使用association映射AddressEntity -->
+        <association property="address" column="address" javaType="cn.ecut.travel.entity.AddressEntity">
+            <id property="id" column="address_id"/>
+            <result property="province" column="province"/>
+            <result property="city" column="city"/>
+            <result property="country" column="country"/>
+        </association>
+    </resultMap>
+
+
+
+    <select id="countAllScenery" resultType="integer">
+        select count(1) from t_scenery where status = 1
+    </select>
+    
+    <select id="selectSceneryByScore" resultMap="IndexVoResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            s.score,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.image_url
+        FROM
+            t_scenery s
+                JOIN
+            t_address a ON s.address = a.id
+        WHERE
+            s.status = 1
+        ORDER BY
+            s.score DESC
+        LIMIT #{page},#{size}
+    </select>
+
+    <select id="selectSceneryByCity" resultMap="IndexVoResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.score,
+            s.image_url
+        FROM
+            t_scenery s
+                JOIN
+            t_address a ON s.address = a.id
+        WHERE
+            s.status = 1 AND city=#{city}
+        ORDER BY
+            s.score DESC
+            LIMIT #{page},#{size}
+    </select>
+
+
+    <select id="selectScenery" resultMap="sceneryVoResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.score,
+            s.image_url,
+            s.ticket_price
+        FROM
+            t_scenery s
+                JOIN
+            t_address a ON s.address = a.id
+        WHERE
+            s.status = 1
+        ORDER BY
+            s.score DESC
+            LIMIT #{page},#{size}
+    </select>
+
+
+
+    <select id="selectSceneryByConditions" parameterType="map" resultMap="sceneryVoResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.score,
+            s.image_url,
+            s.ticket_price
+        FROM t_scenery s
+                JOIN
+        t_address a ON s.address = a.id
+        <where>
+            s.status=1
+            <if test="topicId != null">
+                AND s.id IN (SELECT st.sid FROM t_scenery_topic st JOIN t_topic t ON st.tid=#{topicId})
+            </if>
+            <if test="grade != null">
+                AND s.grade = #{grade}
+            </if>
+            <if test="addressType != null and addressValue != null">
+                <choose>
+                    <when test="addressType == 'province'">
+                        AND a.province=#{addressValue}
+                    </when>
+                    <when test="addressType == 'city'">
+                        AND a.city=#{addressValue}
+                    </when>
+                    <when test="addressType == 'country'">
+                        AND a.country=#{addressValue}
+                    </when>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAllSceneryName" resultType="string">
+        SELECT name FROM t_scenery
+    </select>
+
+    <select id="selectIdAndName" resultType="cn.ecut.travel.dto.Scenery">
+        SELECT id, name FROM t_scenery
+    </select>
+
+    <select id="selectSceneryDetail" resultMap="sceneryDetailResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            s.profile,
+            s.ticket_price,
+            s.attention,
+            s.description,
+            s.score,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            si.url
+        FROM t_scenery s
+                 LEFT JOIN t_address a
+                           ON s.address=a.id
+                 LEFT JOIN t_scenery_img si
+                           ON s.id=si.sid
+        WHERE s.id=#{sceneryId}
+    </select>
+
+    <update id="updateScore" parameterType="map">
+        <foreach collection="idScoreMap" item="entry" separator=";">
+            UPDATE t_scenery
+            SET score = #{entry.value}
+            WHERE id = #{entry.key}
+        </foreach>
+    </update>
+
+    <select id="selectIndexSceneryByKey" resultMap="IndexVoResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            s.score,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.image_url
+        FROM
+            t_scenery s
+                JOIN
+            t_address a ON s.address = a.id
+        WHERE
+            s.status = 1 AND s.name like #{key}
+        ORDER BY
+            s.score DESC
+    </select>
+
+    <select id="selectSceneryByKey" resultMap="sceneryVoResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.status,
+            s.score,
+            s.image_url,
+            s.ticket_price
+        FROM
+            t_scenery s
+                JOIN
+            t_address a ON s.address = a.id
+        WHERE
+            s.status = 1 AND s.name like #{key}
+        ORDER BY
+            s.score DESC
+    </select>
+
+    <insert id="insertScenery" parameterType="cn.ecut.travel.entity.SceneryEntity">
+        INSERT INTO t_scenery (name, grade, address, profile, status, ticket_price, attention, score, description, create_time, image_url)
+        VALUES (#{name}, #{grade}, #{address.id}, #{profile}, #{status}, #{ticketPrice}, #{attention}, #{score}, #{description}, #{createTime}, #{imageUrl})
+    </insert>
+    
+    <select id="selectSceneryIdByProfile" resultType="integer">
+        SELECT id FROM t_scenery WHERE profile=#{profile}
+    </select>
+
+    <insert id="insertImgs" parameterType="map">
+        INSERT INTO t_scenery_img (sid,url) VALUES
+        <foreach collection="urls" item="url" separator="," >
+            (#{sceneryId}, #{url})
+        </foreach>
+    </insert>
+
+    <select id="selectAllScenery" resultType="cn.ecut.travel.entity.SceneryEntity">
+        SELECT id,name,grade,ticket_price,image_url,score,status,create_time FROM t_scenery
+    </select>
+
+    <select id="selectSceneryById" resultMap="SceneryDtoResultMap">
+        SELECT
+            s.id AS id,
+            s.name AS name,
+            s.grade AS grade,
+            a.province AS province,
+            a.id AS address_id,
+            a.city AS city,
+            a.country AS country,
+            s.profile AS profile,
+            s.status AS status,
+            s.ticket_price AS ticketPrice,
+            s.attention AS attention,
+            s.score AS score,
+            s.description AS description,
+            s.image_url AS imageUrl
+        FROM
+            t_scenery s
+                LEFT JOIN
+            t_address a ON s.address = a.id
+        WHERE s.id=#{sceneryId}
+
+    </select>
+
+    <select id="selectImgsBySceneryId" resultType="string">
+        SELECT url FROM t_scenery_img WHERE sid=#{sceneryId}
+    </select>
+
+    <delete id="deleteImgAndSceneryBySceneryId">
+        DELETE FROM t_scenery_img WHERE sid = #{sceneryId};
+    </delete>
+
+    <update id="updateScenery" parameterType="cn.ecut.travel.entity.SceneryEntity">
+        UPDATE t_scenery
+        SET
+            name = #{name},
+            grade = #{grade},
+            address = #{address.id},
+            profile = #{profile},
+            status = #{status},
+            ticket_price = #{ticketPrice},
+            attention = #{attention},
+            description = #{description},
+            image_url = #{imageUrl}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectAllSceneryByKey" resultMap="allSceneryResultMap">
+        SELECT
+            s.id,
+            s.name,
+            s.grade,
+            a.id AS address_id,
+            a.province,
+            a.city,
+            a.country,
+            s.profile,
+            s.status,
+            s.score,
+            s.image_url,
+            s.ticket_price,
+            s.create_time
+        FROM
+            t_scenery s
+                JOIN
+            t_address a ON s.address = a.id
+        WHERE
+             s.name like #{key}
+        ORDER BY
+            s.score DESC
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../icon/travel_icon.png" type="image/x-icon">
+    <title>侠客行旅游网</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/element.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <link rel="stylesheet" href="../css/element.css">
+    <link rel="stylesheet" href="../css/food.css">
+</head>
+<body>
+<div id="page1">
+    <el-container >
+        <el-header>
+            <el-row>
+                <el-col :span="2"><div class="grid-content">
+                    <el-image src="../icon/travel_icon.png" style="height: 70px"/>
+                </div></el-col>
+                <el-col :span="3"><div class="grid-content">
+                    <h1 style="font-family: Hiragino Sans GB;font-size: 23px;font-style:italic;letter-spacing: 4px">侠客行旅游网</h1>
+                </div></el-col>
+                <el-col :span="9"><div class="grid-content"></div></el-col>
+                <el-col :span="5"><div class="grid-content">
+                    <el-input
+                            placeholder="请输入景点名"
+                            v-model="input"
+                            clearable
+                            style="width: 70%">
+                    </el-input>
+                    <el-button type="primary" icon="el-icon-search" style="padding: 12px 10px;" @click="search">搜索</el-button>
+                </div></el-col>
+                <el-col :span="5"></el-col>
+                <div class="grid-content" style="float: right;margin-right: 70px">
+                    <el-dropdown @command="handleCommand" v-if="isLogin" style="margin-top: 10px">
+                        <el-avatar icon="el-icon-user-solid" style="float: left" :src="userToken.headUrl"></el-avatar>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item command="center" icon="el-icon-s-custom">个人中心</el-dropdown-item>
+                            <el-dropdown-item command="message" icon="el-icon-chat-dot-square">消息</el-dropdown-item>
+                            <el-dropdown-item command="logout" icon="el-icon-switch-button">退出</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                    <div  style="margin-bottom: 10px;" v-else>
+                        <el-link type="primary" href="site/login.html" :underline="false" style="margin-bottom: 30px">登录</el-link>
+                        <el-link type="primary" href="site/register.html" :underline="false" style="margin-bottom: 30px">注册</el-link>
+                    </div>
+                </div>
+            </el-row>
+        </el-header>
+
+        <el-main >
+            <el-menu
+                    default-active="4"
+                    class="el-menu-demo"
+                    mode="horizontal"
+                    @select="handleSelect"
+                    background-color="#545c64"
+                    text-color="#fff"
+                    active-text-color="#ffd04b">
+                <el-menu-item index="1" @click="selectMenu(1)" style="width: 16.6%;font-size: 17px">首页</el-menu-item>
+                <el-menu-item index="2" @click="selectMenu(2)" style="width: 16.6%;font-size: 17px">旅游景点</el-menu-item>
+                <el-menu-item index="3" @click="selectMenu(3)" style="width: 16.6%;font-size: 17px">出行攻略</el-menu-item>
+                <el-menu-item index="4" @click="selectMenu(4)" style="width: 16.6%;font-size: 17px">美食推荐</el-menu-item>
+                <el-menu-item index="5" @click="selectMenu(5)" style="width: 16.6%;font-size: 17px">旅游快讯</el-menu-item>
+                <el-menu-item index="6" @click="selectMenu(6)" style="width: 16.6%;font-size: 17px">投诉建议</el-menu-item>
+            </el-menu>
+            <div class="scenery-box" >
+                <el-card style="margin-top: 10px;border: 2px solid #DCDFE6;background-color: #d9ecff;" :body-style="{padding:'5px'}">
+                    <div style="display: flex">
+                        <div align="left" style="flex: 9;margin-top: 3px">
+                            <span style="font-size: 14px;color: #909399">地区：</span>
+                            <el-cascader
+                                placeholder="请选择或搜索"
+                                :options="options"
+                                size="small"
+                                :props="{ checkStrictly: true }"
+                                filterable></el-cascader>
+                        </div>
+                        <div style="flex: 1">
+                            <el-tooltip content="发布美食" placement="top">
+                                <el-button type="primary" icon="el-icon-edit" circle style="float: right" @click="toEditor"></el-button>
+                            </el-tooltip>
+                        </div>
+                    </div>
+                </el-card>
+                <el-card style="margin-top: 10px;border: 2px solid #DCDFE6;background-color: #d9ecff" align="left" :body-style="{padding:'5px'}">
+                    <span style="color: #909399; fontSize: 14px; marginLeft: 5px; cursor: default">推荐</span>
+                    <span style="color: #909399; fontSize: 14px; marginLeft: 5px; cursor: default">最热</span>
+                </el-card>
+                <div class="scenery-indefinite">
+                    <div class="infinite-list-wrapper" style="overflow: hidden;">
+                        <ul
+                                class="list"
+                                v-infinite-scroll="load"
+                                infinite-scroll-disabled="disabled"
+                                infinite-scroll-distance="240"
+                                infinite-scroll-immediate="false">
+                            <li v-for="i in count" class="list-item" style="margin-top: 5px">
+                                <div style="display: flex" class="straregy-box">
+                                    <div style="flex: 2"><el-skeleton style="width: 350px;" :loading="loading" animated>
+                                        <template slot="template">
+                                            <el-skeleton-item
+                                                    variant="image"
+                                                    style="width: 240px; height: 240px;"
+                                            />
+                                            <div style="padding: 14px;">
+                                                <el-skeleton-item variant="h3" style="width: 50%;" />
+                                                <div
+                                                        style="display: flex; align-items: center; justify-items: space-between; margin-top: 16px; height: 16px;"
+                                                >
+                                                    <el-skeleton-item variant="text" style="margin-right: 16px;" />
+                                                    <el-skeleton-item variant="text" style="width: 30%;" />
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template>
+                                            <el-card :body-style="{ padding: '0px', marginBottom: '1px',height: '460px' }">
+                                                <img
+                                                        src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                                                        class="image"
+                                                        style="height: 350px"
+                                                />
+                                                <div style="height: 53px;font-size: 16px;overflow: hidden;color: #606266;display: flex;">
+                                                    <div style="flex: 4;padding: 0px 10px;margin-top: 6px">长沙三日游记，绝了。这份攻略很推荐</div>
+                                                    <div style="flex: 1;">
+                                                        <img src="../icon/love.png">
+                                                        <div style="font-size: 14px;line-height: 8px">6000.0w</div>
+                                                    </div>
+                                                </div>
+                                                <div style="background-color: #EBEEF5;height: 58px;display: flex">
+                                                    <div style="flex: 1">
+                                                        <el-avatar style="float: left;margin-top: 4px;margin-left: 10px" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" :size="50"></el-avatar>
+                                                    </div>
+                                                    <div style="flex: 3;">
+                                                        <p style="font-size: 14px;color: #4299ce;margin-top: 18px;padding: 0px 15px;overflow: hidden;white-space: nowrap;width: 170px;text-overflow: ellipsis">不会写代码的童鞋</p>
+                                                    </div>
+                                                    <div style="flex: 2">
+                                                        <div class="time" style="margin-top: 18px">{{ currentDate }}</div>
+                                                    </div>
+                                                </div>
+                                            </el-card>
+                                        </template>
+                                    </el-skeleton></div>
+                                    <div style="flex: 2"><el-skeleton style="width: 350px;" :loading="loading" animated>
+                                        <template slot="template">
+                                            <el-skeleton-item
+                                                    variant="image"
+                                                    style="width: 240px; height: 240px;"
+                                            />
+                                            <div style="padding: 14px;">
+                                                <el-skeleton-item variant="h3" style="width: 50%;" />
+                                                <div
+                                                        style="display: flex; align-items: center; justify-items: space-between; margin-top: 16px; height: 16px;"
+                                                >
+                                                    <el-skeleton-item variant="text" style="margin-right: 16px;" />
+                                                    <el-skeleton-item variant="text" style="width: 30%;" />
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template>
+                                            <el-card :body-style="{ padding: '0px', marginBottom: '1px',height: '460px' }">
+                                                <img
+                                                        src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                                                        class="image"
+                                                        style="height: 350px"
+                                                />
+                                                <div style="height: 53px;font-size: 16px;overflow: hidden;color: #606266;display: flex;">
+                                                    <div style="flex: 4;padding: 0px 10px;margin-top: 6px">长沙三日游记，绝了。这份攻略很推荐</div>
+                                                    <div style="flex: 1;">
+                                                        <img src="../icon/love.png">
+                                                        <div style="font-size: 14px;line-height: 8px">6000.0w</div>
+                                                    </div>
+                                                </div>
+                                                <div style="background-color: #EBEEF5;height: 58px;display: flex">
+                                                    <div style="flex: 1">
+                                                        <el-avatar style="float: left;margin-top: 4px;margin-left: 10px" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" :size="50"></el-avatar>
+                                                    </div>
+                                                    <div style="flex: 3;">
+                                                        <p style="font-size: 14px;color: #4299ce;margin-top: 18px;padding: 0px 15px;overflow: hidden;white-space: nowrap;width: 170px;text-overflow: ellipsis">不会写代码的童鞋</p>
+                                                    </div>
+                                                    <div style="flex: 2">
+                                                        <div class="time" style="margin-top: 18px">{{ currentDate }}</div>
+                                                    </div>
+                                                </div>
+                                            </el-card>
+                                        </template>
+                                    </el-skeleton></div>
+                                    <div style="flex: 2"><el-skeleton style="width: 350px;" :loading="loading" animated>
+                                        <template slot="template">
+                                            <el-skeleton-item
+                                                    variant="image"
+                                                    style="width: 240px; height: 240px;"
+                                            />
+                                            <div style="padding: 14px;">
+                                                <el-skeleton-item variant="h3" style="width: 50%;" />
+                                                <div
+                                                        style="display: flex; align-items: center; justify-items: space-between; margin-top: 16px; height: 16px;"
+                                                >
+                                                    <el-skeleton-item variant="text" style="margin-right: 16px;" />
+                                                    <el-skeleton-item variant="text" style="width: 30%;" />
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template>
+                                            <el-card :body-style="{ padding: '0px', marginBottom: '1px',height: '460px' }">
+                                                <img
+                                                        src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                                                        class="image"
+                                                        style="height: 350px"
+                                                />
+                                                <div style="height: 53px;font-size: 16px;overflow: hidden;color: #606266;display: flex;">
+                                                    <div style="flex: 4;padding: 0px 10px;margin-top: 6px">长沙三日游记，绝了。这份美食很推荐</div>
+                                                    <div style="flex: 1;">
+                                                        <img src="../icon/no_love.png">
+                                                        <div style="font-size: 14px;line-height: 8px;">6326.0w</div>
+                                                    </div>
+                                                </div>
+                                                <div style="background-color: #EBEEF5;height: 58px;display: flex">
+                                                    <div style="flex: 1">
+                                                        <el-avatar style="float: left;margin-top: 4px;margin-left: 10px" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" :size="50"></el-avatar>
+                                                    </div>
+                                                    <div style="flex: 3;">
+                                                        <p style="font-size: 14px;color: #4299ce;margin-top: 18px;padding: 0px 15px;overflow: hidden;white-space: nowrap;width: 170px;text-overflow: ellipsis">不会写代码的童鞋</p>
+                                                    </div>
+                                                    <div style="flex: 2">
+                                                        <div class="time" style="margin-top: 18px">{{ currentDate }}</div>
+                                                    </div>
+                                                </div>
+                                            </el-card>
+                                        </template>
+                                    </el-skeleton></div>
+                                </div>
+                            </li>
+                        </ul>
+                        <p v-if="listLoading">加载中...</p>
+                        <p v-if="noMore">没有更多了</p>
+                    </div>
+                </div>
+            </div>
+        </el-main>
+
+    </el-container>
+</div>
+</body>
+<script type="text/javascript" src="../js/food.js"></script>
+</html>

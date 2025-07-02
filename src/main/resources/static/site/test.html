@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../icon/travel_icon.png" type="image/x-icon">
+    <title>侠客行旅游网</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/element.js"></script>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <link rel="stylesheet" href="../css/element.css">
+    <link rel="stylesheet" href="../css/strategy.css">
+
+    <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+    <style>
+        #editor—wrapper {
+            border: 1px solid #ccc;
+            z-index: 100; /* 按需定义 */
+        }
+        #toolbar-container { border-bottom: 1px solid #ccc;z-index: 2 }
+        #editor-container { height: 500px; }
+        .w-e-toolbar {
+            z-index: 2!important;
+        }
+        .w-e-menu {
+            z-index: 2 !important;
+        }
+        .w-e-text-container {
+            z-index: 1 !important;
+        }
+    </style>
+</head>
+<body>
+<div id="page1">
+    <el-container >
+        <el-header>
+            <el-row>
+                <el-col :span="2"><div class="grid-content">
+                    <el-image src="../icon/travel_icon.png" style="height: 70px"/>
+                </div></el-col>
+                <el-col :span="3"><div class="grid-content">
+                    <h1 style="font-family: Hiragino Sans GB;font-size: 23px;font-style:italic;letter-spacing: 4px">侠客行旅游网</h1>
+                </div></el-col>
+                <el-col :span="9"><div class="grid-content"></div></el-col>
+                <el-col :span="5"><div class="grid-content">
+                    <el-input
+                            placeholder="请输入景点名"
+                            v-model="input"
+                            clearable
+                            style="width: 70%">
+                    </el-input>
+                    <el-button type="primary" icon="el-icon-search" style="padding: 12px 10px;" @click="search">搜索</el-button>
+                </div></el-col>
+                <el-col :span="5"><div class="grid-content" style="padding:10px 50px">
+                    <el-avatar icon="el-icon-user-solid" style="float: left"></el-avatar>
+                </div></el-col>
+            </el-row>
+        </el-header>
+
+        <el-main >
+
+            <div id="editor—wrapper">
+                <div id="toolbar-container"><!-- 工具栏 --></div>
+                <div id="editor-container"><!-- 编辑器 --></div>
+            </div>
+            <div v-html="div"></div>
+        </el-main>
+
+    </el-container>
+</div>
+</body>
+<script type="text/javascript" src="../js/wangEditor.js"></script>
+<script type="text/javascript" src="../js/strategy.js">
+    var json
+</script>
+
+<script type="text/javascript">
+    const { createEditor, createToolbar } = window.wangEditor
+
+    const editorConfig = {
+        placeholder: 'Type here...',
+        onChange(editor) {
+            const html = editor.getHtml()
+            json=editor.children
+            console.log('editor content', editor.children)
+            // 也可以同步到 <textarea>
+        }
+    }
+
+    const editor = createEditor({
+        selector: '#editor-container',
+        html: '',
+        config: editorConfig,
+        mode: 'default', // or 'simple'
+    })
+
+    const toolbarConfig = {}
+
+    const toolbar = createToolbar({
+        editor,
+        selector: '#toolbar-container',
+        config: toolbarConfig,
+        mode: 'default', // or 'simple'
+    })
+
+
+
+</script>
+
+</html>
